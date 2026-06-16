@@ -1,0 +1,383 @@
+// ==========================================================================
+// ARQUIVO PRINCIPAL DE ESTILOS (main.scss)
+// ==========================================================================
+// Propósito: Orquestrar a identidade visual da Dashboard, importando tokens,
+// aplicando resets, configurando a grid global e gerenciando componentes de UI.
+
+// Diretivas modernas do SASS para carregamento de módulos isolados
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ==========================================
+// 1. RESET & CONFIGURAÇÕES GLOBAIS
+// ==========================================
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; // Inclui bordas e preenchimentos no cálculo da largura do elemento
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: $color-bg;
+    color: $color-text-main;
+    min-height: 100vh;
+    overflow-x: hidden; // Trava de segurança para impedir qualquer transbordamento e rolagem lateral no mobile
+}
+
+// ==========================================
+// 2. ESTRUTURA DO LAYOUT (CONTAINER & SIDEBAR)
+// ==========================================
+.dashboard-container {
+    display: flex; // Flexbox horizontal por padrão no desktop (Sidebar lateral + Conteúdo)
+    min-height: 100vh;
+
+    // Adaptação para telas médias/menores (Tablets e Celulares)
+    @include respond-to(md) {
+        flex-direction: column; // Altera o fluxo para empilhamento vertical (Sidebar vira topo)
+    }
+}
+
+.sidebar {
+    width: 260px;
+    background-color: $color-sidebar;
+    color: white;
+    display: flex;
+    flex-direction: column; // Distribuição vertical dos itens internos no desktop
+    padding: 2rem 1.5rem;
+    flex-shrink: 0; // Impede que o container reduza a largura do menu se faltar espaço
+
+    // Reconfiguração completa da Sidebar para agir como barra de navegação superior no mobile
+    @include respond-to(md) {
+        width: 100%;
+        padding: 1rem;
+        flex-direction: row;            // Itens de marca e navegação dispostos lado a lado
+        align-items: center;
+        justify-content: space-between; // Alinha logotipo na extrema esquerda e menu na direita
+        flex-wrap: wrap;                // Permite quebra suave caso a resolução seja criticamente pequena
+        gap: 10px;
+    }
+
+    // Identidade/Logo do Sistema
+    &__brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 3rem;
+        
+        i { color: $color-sidebar-active; font-size: 1.6rem; }
+        h2 { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.5px; }
+
+        @include respond-to(md) { 
+            margin-bottom: 0; // Elimina o recuo inferior quando inserido no topo
+        }
+    }
+
+    // Lista de Links de Navegação
+    &__nav {
+        @include respond-to(md) { 
+            margin-top: 0; 
+        }
+        
+        ul {
+            list-style: none;
+            
+            @include respond-to(md) { 
+                display: flex; // Transforma os links verticais em um menu horizontal no mobile
+                gap: 8px; 
+            }
+
+            li {
+                margin-bottom: 0.5rem;
+                @include respond-to(md) { margin-bottom: 0; }
+
+                a {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    color: $color-sidebar-text;
+                    text-decoration: none;
+                    padding: 0.8rem 1rem;
+                    border-radius: 8px;
+                    font-size: 0.95rem;
+                    transition: all 0.2s ease;
+
+                    @include respond-to(md) {
+                        padding: 0.5rem 0.8rem; // Redução de estofamento para otimização de espaço touch
+                        font-size: 0.85rem;     
+                    }
+
+                    &:hover {
+                        background: rgba(255, 255, 255, 0.05);
+                        color: white;
+                    }
+                }
+
+                // Estado de Link Ativo (Página Atual)
+                &.active a {
+                    background: rgba(56, 189, 248, 0.12);
+                    color: $color-sidebar-active;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+
+    // Rodapé de Direitos Autorais
+    &__footer {
+        margin-top: auto; // Técnica Flexbox para empurrar o bloco fixamente para a base da sidebar
+        font-size: 0.75rem;
+        color: $color-sidebar-text;
+        text-align: center;
+        
+        @include respond-to(md) { display: none; } // Ocultado no mobile para limpar a interface
+    }
+}
+
+// ==========================================
+// 3. CONTEÚDO PRINCIPAL & GRID RESPONSIVO
+// ==========================================
+.main-content {
+    flex: 1; // Ocupa todo o espaço restante disponível na tela horizontal
+    padding: 2.5rem;
+    max-width: 100%; // Previne estouros de layout
+    
+    @include respond-to(md) { padding: 1.5rem 1rem; }
+}
+
+.main-header {
+    margin-bottom: 2.5rem;
+    h1 { font-size: 1.8rem; color: $color-sidebar; margin-bottom: 0.4rem; }
+    p { color: $color-text-muted; font-size: 1rem; }
+}
+
+// Layout de Distribuição dos Painéis usando CSS Grid
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); // Define duas colunas idênticas e proporcionais no Desktop
+    gap: 1.5rem;
+    width: 100%;
+
+    // Transição adaptativa para monitores menores ou tablets (Breakpoint LG)
+    @include respond-to(lg) {
+        grid-template-columns: 1fr; // Recolhe a malha para apenas uma coluna por linha
+    }
+}
+
+// ==========================================
+// 4. COMPONENTE: CARD (PAINÉIS DA DASHBOARD)
+// ==========================================
+.card {
+    background: $color-card-bg;
+    border-radius: 12px;
+    border: 1px solid $color-border;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03); // Efeito suave de profundidade
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+
+    // Modificador: Aloca o card de base teórica/tabelas expandido ao longo de 2 colunas
+    &--info {
+        grid-column: span 2;
+        @include respond-to(lg) { grid-column: span 1; } // Restringe a 1 coluna no modo responsivo
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid $color-border;
+        padding-bottom: 0.8rem;
+
+        i { color: $color-primary; font-size: 1.2rem; }
+        h3 { font-size: 1.1rem; color: $color-sidebar; font-weight: 600; }
+    }
+}
+
+// ==========================================
+// 5. CAIXAS DE ENTRADA E SUGESTÕES (INTERFACES DA ÁRVORE TRIE)
+// ==========================================
+.search-box, .insert-box {
+    display: flex;
+    gap: 10px;
+    position: relative;
+    margin-bottom: 1rem;
+    width: 100%;
+
+    input {
+        flex: 1;
+        padding: 0.8rem 1rem;
+        border: 1px solid $color-border;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        min-width: 0; // Correção essencial no Flexbox: impede o input de expandir além do limite do Card
+
+        &:focus { 
+            border-color: $color-primary;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); // Anel estético de foco
+        }
+    }
+}
+
+// Botão interno flutuante "X" para reset de busca
+#clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%); // Alinhamento centralizado perfeito baseado no próprio eixo Y
+    background: none;
+    border: none;
+    color: $color-text-muted;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+    
+    &:hover { color: $color-sidebar; }
+}
+
+// Lista dinâmica que exibirá o autocomplete gerado pelo algoritmo do JS
+.suggestions-list {
+    list-style: none;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    max-height: 180px;
+    overflow-y: auto; // Ativa barra de rolagem interna vertical caso exceda o limite
+    background: #ffffff;
+
+    li {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid $color-border;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.15s ease;
+        word-break: break-all; // Evita que palavras excessivamente longas estoure a largura do bloco
+
+        &:last-child { border-bottom: none; }
+        
+        // Feedback visual simulando a seleção ativa de uma palavra sugerida
+        &:hover { 
+            background-color: rgba(99, 102, 241, 0.05); 
+            color: $color-primary; 
+            padding-left: 1.2rem; // Deslocamento elegante induzido pelo hover
+        }
+        
+        // Estado inicial neutro (Aguardando digitação)
+        &.placeholder { 
+            color: $color-text-muted; 
+            cursor: default; 
+            background: none;
+            &:hover { padding-left: 1rem; color: $color-text-muted; }
+        }
+    }
+}
+
+// Botões de Interação (Inserção)
+.btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap; // Impede que o texto "Inserir" divida-se em duas linhas em resoluções mínimas
+
+    &--primary {
+        background-color: $color-primary;
+        color: white;
+        &:hover { background-color: $color-primary-hover; }
+    }
+}
+
+// Área de Exibição das Palavras Inseridas na Árvore (Tags Dinâmicas)
+.word-tags {
+    display: flex;
+    flex-wrap: wrap; // Organiza as tags horizontalmente e gera quebra automática para a linha de baixo
+    gap: 8px;
+    margin-top: 0.8rem;
+    max-height: 130px;
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px dashed $color-border; // Contorno pontilhado indicando zona de histórico
+    border-radius: 8px;
+    background: #fdfdfd;
+
+    .tag {
+        background: rgba(99, 102, 241, 0.08);
+        color: $color-primary;
+        padding: 0.35rem 0.7rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 1px solid rgba(99, 102, 241, 0.12);
+        animation: fadeIn 0.3s ease; // Dispara a animação assim que o elemento é injetado pelo JavaScript
+        word-break: break-all;
+    }
+}
+
+h4 {
+    font-size: 0.9rem;
+    color: $color-text-main;
+    margin-top: 1rem;
+}
+
+// ==========================================
+// 6. COMPONENTE: TABELA TÉCNICA (ANÁLISE DE COMPLEXIDADE - BIG O)
+// ==========================================
+.tech-table {
+    width: 100%;
+    border-collapse: collapse; // Funde as bordas adjacentes das células em uma única linha uniforme
+    margin-bottom: 0.8rem;
+
+    // Adaptação para tabelas em telas pequenas
+    @include respond-to(md) {
+        display: block;
+        overflow-x: auto; // Cria uma rolagem horizontal interna se a tabela for maior que a tela (proteção mobile)
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.85rem;
+        text-align: left;
+        border-bottom: 1px solid $color-border;
+    }
+    th { color: $color-text-muted; font-weight: 600; font-size: 0.9rem; }
+    td { font-size: 0.95rem; }
+}
+
+// Etiqueta Visual de Destaque da Notação Big-O
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: 'Courier New', Courier, monospace; // Fonte monoespaçada ideal para trechos de código/matemática
+    font-weight: 600;
+
+    &--green { background: rgba(16, 185, 129, 0.1); color: $color-success; }
+}
+
+.table-caption {
+    font-size: 0.8rem;
+    color: $color-text-muted;
+    font-style: italic;
+}
+
+// ==========================================
+// 7. ANIMAÇÕES (KEYFRAMES)
+// ==========================================
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(4px); // Efeito sutil de subida enquanto surge em cena
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
